@@ -1,5 +1,3 @@
-
-
 #### GAME DESIGN SPEC
 
 JSS is a turn-based, survival, dungeon-crawler game. On each level, you start at the bottom-left corner of the board and have to find your way to the exit at the top-left corner of the board. Along the way, you will find food or soda, that increases your health. You will also encounter zombie enemies that will attack you, and you can attack back too. Finally, you can also break walls down.
@@ -24,10 +22,6 @@ You can find the Enemy files at `Assets/Scripts/Characters/Enemies/`.
     - Add any other features you think of that will improve the game or how it feels to play it. If you do add any features, please let me know.
     - Fix any bugs you encounter. Again, do let me know if you find and fix any bugs.
 
-**Page 1 of 2**
-
-<span class="break"></span>
-
 #### Unity Installation
 
 I've used Unity version 5.4.0f3, so you will need either that version, or a newer version to run this game.
@@ -50,13 +44,4 @@ You can find all the versions of Unity here - [https://unity3d.com/get-unity/dow
       - Failure conditions and errors are handled
       - Memory is handled properly - anything that is allocated is also disposed
 
-**Page 2 of 2**
-
-<style type="text/css">
-@media print {
-    .break { display: block; page-break-before: always; }
-}
-.markdown-body code:before, .markdown-body code:after {
-    content: "";
-}
 </style>
