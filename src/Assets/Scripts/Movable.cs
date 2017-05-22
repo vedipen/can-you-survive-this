@@ -61,7 +61,7 @@ namespace JSS {
 		}
 
 		// Returns the current Vector2 position of this Movable
-		virtual protected Vector2 GetCurrentPosition() {
+		virtual public Vector2 GetCurrentPosition() {
 			return rigidBody2D.transform.position;
 		}
 
