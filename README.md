@@ -1,4 +1,4 @@
-# Just Survive Somehow
+# Just Somehow Survive  
 
 #### GAME DESIGN SPEC
 
