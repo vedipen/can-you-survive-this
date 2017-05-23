@@ -84,19 +84,44 @@ namespace JSS.Characters
             }
             else if (currentState == State.TURN_IN_PROGRESS && nextState == State.FOUND_EXIT)
             {
-                isValidTransition = true;
-
+                //Check if any enemy is still alive
+                GameObject[] enemyObjs = GameObject.FindGameObjectsWithTag(Tags.Enemy);
+                if (enemyObjs.Length == 0)
+                {
+                    isValidTransition = true;
+                } else
+                {
+                    isValidTransition = false;
+                }
                 // WAITING_FOR_TURN => FOUND_EXIT
             }
             else if (currentState == State.WAITING_FOR_TURN && nextState == State.FOUND_EXIT)
             {
-                isValidTransition = true;
+                //Check if any enemy is still alive
+                GameObject[] enemyObjs = GameObject.FindGameObjectsWithTag(Tags.Enemy);
+                if (enemyObjs.Length == 0)
+                {
+                    isValidTransition = true;
+                }
+                else
+                {
+                    isValidTransition = false;
+                }
 
                 // HAS_NEXT_TURN => FOUND_EXIT
             }
             else if (currentState == State.HAS_NEXT_TURN && nextState == State.FOUND_EXIT)
             {
-                isValidTransition = true;
+                //Check if any enemy is still alive
+                GameObject[] enemyObjs = GameObject.FindGameObjectsWithTag(Tags.Enemy);
+                if (enemyObjs.Length == 0)
+                {
+                    isValidTransition = true;
+                }
+                else
+                {
+                    isValidTransition = false;
+                }
             }
 
             // Only change state if the transition is valid
@@ -108,7 +133,8 @@ namespace JSS.Characters
             }
             else
             {
-                throw new System.Exception("Invalid transition attempt!");
+                //throw new System.Exception("Invalid transition attempt!");
+                //Debug.Log("Enemies cleared?");
             }
         }
 
@@ -139,7 +165,7 @@ namespace JSS.Characters
         // Returns true if the Player has found the exit
         public bool hasFoundTheExit()
         {
-            return (currentState == State.FOUND_EXIT);
+            return currentState == State.FOUND_EXIT;
         }
 
         // Moves this Movable from its current position along the specified

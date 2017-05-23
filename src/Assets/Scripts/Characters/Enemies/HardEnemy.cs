@@ -37,5 +37,7 @@ namespace JSS.Characters.Enemies
         //       shortest path possible
         //
         //		 Feel free to use `MakeRandomMove` in `IEnemy` as reference as you write this method.
+        //
+        // Done
     }
 }

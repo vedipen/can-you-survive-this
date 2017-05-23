@@ -10,7 +10,8 @@ namespace JSS.Characters.Enemies
 
         private Vector2[] possibleDirections;
         private ArrayList directions;
-        private Transform target;
+        private Transform target;   //Player's transform
+        private bool waiting = true;    //If easy enemy is waiting
 
         // Initializes an IEnemy's initial state
         override protected void Init(LayerMask blockingLayer)
@@ -20,10 +21,9 @@ namespace JSS.Characters.Enemies
             possibleDirections[1] = new Vector2(-1f, 0f);
             possibleDirections[2] = new Vector2(0f, -1f);
             possibleDirections[3] = new Vector2(0f, 1f);
-
+            waiting = true;         //Initially easy enemy will always wait
             directions = new ArrayList();
-            ResetDirectionsList();
-            target = GameObject.FindGameObjectWithTag("Player").transform;
+            target = GameObject.FindGameObjectWithTag("Player").transform;  //Player's transform
             base.Init(blockingLayer);
         }
 
@@ -127,28 +127,39 @@ namespace JSS.Characters.Enemies
             }
         }
 
-        protected IEnumerator TrackPlayer()
+        protected IEnumerator TrackPlayer()     //for following the player and hitting when possible
         {
             //Debug.Log("Triggered");
             Vector2 direction = Vector2.zero;
             Vector2 directionAlternative = Vector2.zero;
             bool hasValidMove = false;
-            float xDir = 0;
-            float yDir = 0;
-            float xDirAlternative = 0;
-            float yDirAlternative = 0;
-            if (Mathf.Abs(target.position.y - transform.position.y) < float.Epsilon)
+            float xDir = 0;     //Original Direction
+            float yDir = 0;     //Original Direction
+            //In original direction, preference is given to same axis 
+            float xDirAlternative = 0;  //Alternate Direction
+            float yDirAlternative = 0;  //Alternate Direction
+            //In original direction, preference is given to opposite axis
+
+            //If no change in x axis
+            if (Mathf.Abs(target.position.x - transform.position.x) < float.Epsilon)
             {
-                xDir = target.position.x > transform.position.x ? 1 : -1;
-                xDirAlternative = 0;
-                yDirAlternative = target.position.y > transform.position.y ? 1 : -1;
-            }
-            else
-            {
+                //Move in y axis 1 = up, -1 = down
                 yDir = target.position.y > transform.position.y ? 1 : -1;
+
+                //Move in x axis 1 = right, -1 = left for alternative
                 xDirAlternative = target.position.x > transform.position.x ? 1 : -1;
                 yDirAlternative = 0;
             }
+            else    //If no change in y axis
+            {
+                //Move in x axis 1 = right, -1 = left
+                xDir = target.position.x > transform.position.x ? 1 : -1;
+
+                //Move in y axis 1 = up, -1 = down for alternative
+                xDirAlternative = 0;
+                yDirAlternative = target.position.y > transform.position.y ? 1 : -1;
+            }
+            //Direction Vectors for both, original and alternative
             direction = new Vector2(xDir, yDir);
             directionAlternative = new Vector2(xDirAlternative, yDirAlternative);
 
@@ -165,12 +176,10 @@ namespace JSS.Characters.Enemies
                     animator.SetTrigger("enemyHit");
                     // Deal damage to them
                     player.takeDamage(getDamage());
-                    // This counts as a valid move
-                    hasValidMove = true;
-                    // but reset direction to zero,
-                    // so the Enemy doesn't move into
+                    // the Enemy doesn't move into
                     // the Player's spot
-                    direction = Vector2.zero;
+                    yield return StartCoroutine(MoveByCoroutine(Vector2.zero));
+                    yield break; //Complete this Coroutine
                 }
             }
             else
@@ -181,6 +190,7 @@ namespace JSS.Characters.Enemies
             if (hasValidMove)
             {
                 yield return StartCoroutine(MoveByCoroutine(direction));
+                yield break;    //Complete this Coroutine
             }
             else
             {
@@ -197,62 +207,80 @@ namespace JSS.Characters.Enemies
                         animator.SetTrigger("enemyHit");
                         // Deal damage to them
                         player.takeDamage(getDamage());
-                        // This counts as a valid move
-                        hasValidMove = true;
-                        // but reset directionAlternative to zero,
-                        // so the Enemy doesn't move into
+                        // the Enemy doesn't move into
                         // the Player's spot
-                        directionAlternative = Vector2.zero;
+                        yield return StartCoroutine(MoveByCoroutine(Vector2.zero));
+                        yield break;    //Complete this Coroutine
                     }
                 }
                 else
                 {
                     hasValidMove = true;
                 }
-                if (hasValidMove) //if possible
+                if (hasValidMove)   //If alternate path is valid
                 {
                     yield return StartCoroutine(MoveByCoroutine(directionAlternative));
+                    yield break;    //Complete this Coroutine
                 }
-                else
+                else //Even alternate path did't work due to hurdles. Check for any possible path
                 {
+                    //Try for opposite of the original path, to reduce checking. Eg. If original is right then now try left..
                     if (direction.x == 1) direction.x = -1;
                     else if (direction.x == -1) direction.x = 1;
                     if (direction.y == 1) direction.y = -1;
                     else if (direction.y == -1) direction.y = 1;
+                    //Check if Valid
                     Collision collisionSecondary = GetCollision(direction);
                     if (!collisionSecondary.hasOccurred())
                     {
                         yield return StartCoroutine(MoveByCoroutine(direction));
+                        yield break; //Complete Coroutine
+
                     }
-                    else
+                    else    //Opposite of original path didnt work due to collision
                     {
+                        // Check for opposite of Alternate path 
                         if (directionAlternative.x == 1) directionAlternative.x = -1;
                         else if (directionAlternative.x == -1) directionAlternative.x = 1;
                         if (directionAlternative.y == 1) directionAlternative.y = -1;
                         else if (directionAlternative.y == -1) directionAlternative.y = 1;
+                        //Check if Valid
                         collisionSecondary = GetCollision(directionAlternative);
                         if (!collisionSecondary.hasOccurred())
                         {
                             yield return StartCoroutine(MoveByCoroutine(directionAlternative));
+                            yield break;    //Complete Coroutine
                         }
-                    }
+                    } 
+                    // No more moves possible i.e Trapped
                 }
             }
         }
 
-        protected IEnumerator WaitAndTrackPlayer()
+        protected IEnumerator WaitAndTrackPlayer()  //For easy enemy
         {
-            //Debug.Log("Player position : " + target.position.x + " " + target.position.y + " Easy Enemy Position :" + transform.position.x + " " + transform.position.y);
-            //Debug.Log("In Range");
-            if (Math.Abs(target.position.x - transform.position.x) <= 2 && Math.Abs(target.position.y - transform.position.y) <= 2)
+            //waiting is a private boolean used to notify if easy enemy is waiting. Initially true.
+            if (waiting)
             {
-                //Debug.Log("In Range");
-                //Debug.Log(Math.Abs(target.position.x - transform.position.x) + " " + Math.Abs(target.position.y - transform.position.y));
-                StartCoroutine(TrackPlayer());
+                //Check for range in 2 tiles
+                if (Math.Abs(target.position.x - transform.position.x) <= 2 
+                        && Math.Abs(target.position.y - transform.position.y) <= 2)
+                {
+                    /*Debug.Log("In Range");
+                      Debug.Log(Math.Abs(target.position.x - transform.position.x) + " " 
+                                + Math.Abs(target.position.y - transform.position.y));
+                    */
+                    waiting = false;    //Will not wait once Player was in range
+                    StartCoroutine(TrackPlayer());
+                }
+                else
+                {
+                    yield return null; //If both the path wont work i.e already standing in best position then do nothing
+                }
             }
-            else
+            else    //Has been in its range of 2 tiles once
             {
-                yield return null; //If both the path wont work i.e already standing in best position then do nothing
+                StartCoroutine(TrackPlayer());
             }
         }
     }

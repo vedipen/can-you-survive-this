@@ -20,7 +20,7 @@ namespace JSS.Characters.Enemies
         {
             base.Init(blockingLayer);
         }
-
+        
         // Invoked to tell the AI to make a move
         override public IEnumerator Move()
         {
@@ -39,6 +39,7 @@ namespace JSS.Characters.Enemies
         //	     the Player to attack him.
         //
         //		 Feel free to use `MakeRandomMove` in `IEnemy` as reference as you write this method.
-
+        //
+        // DONE.
     }
 }
